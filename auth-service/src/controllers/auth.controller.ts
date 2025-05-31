@@ -13,6 +13,21 @@ export const login = async (req: Request, res: Response) => {
   res.status(result.status).json(result.data);
 };
 
+export const getUserById = async (req: Request, res: Response): Promise<void> => {
+  const user = await AuthService.findById(req.params.id);
+  if (!user) {
+    res.status(404).json({ message: 'User not found' });
+    return;
+  }
+  // hanya expose fields aman
+  res.json({
+    id:        user.id,
+    username:  user.username,
+    email:     user.email,
+    createdAt: user.createdAt
+  });
+};
+
 export const getInfoUser = async (req: Request, res: Response) => {
   const userId = (req as any).userId as string;
   const user = await AuthService.findById(userId);

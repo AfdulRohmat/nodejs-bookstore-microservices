@@ -1,6 +1,6 @@
 import { Repository, IsNull, ILike } from 'typeorm';
 import { Book } from '../entities/Book';
-import { AppDataSource } from '../data-source';
+import { AppDataSource } from '../config/data-source';
 import { logger } from '../utils/logger';
 import axios from 'axios';
 

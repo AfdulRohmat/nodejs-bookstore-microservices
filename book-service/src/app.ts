@@ -1,6 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import { AppDataSource } from './data-source';
+import { AppDataSource } from './config/data-source';
 import bookRoutes from './routes/book.routes';
 
 dotenv.config();

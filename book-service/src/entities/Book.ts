@@ -15,14 +15,27 @@ export class Book {
     author!: string;
 
     // Audit fields
-    @CreateDateColumn({ name: 'created_at' })
+    // Gunakan fungsi DB: NOW() sudah otomatis +07 karena server Postgres di‐set TZ=Asia/Jakarta
+    @Column({
+        name: 'created_at',
+        type: 'timestamp with time zone',
+        default: () => 'NOW()'
+    })
     createdAt!: Date;
 
-    @UpdateDateColumn({ name: 'modified_at', nullable: true })
+    @Column({
+        name: 'modified_at',
+        type: 'timestamp with time zone',
+        default: () => 'NOW()'
+    })
     modifiedAt!: Date;
 
-    @DeleteDateColumn({ name: 'deleted_at', nullable: true })
-    deletedAt!: Date;
+    @Column({
+        name: 'deleted_at',
+        type: 'timestamp with time zone',
+        nullable: true
+    })
+    deletedAt?: Date;
 
     @Column({ name: 'created_by', nullable: true })
     createdBy?: string;

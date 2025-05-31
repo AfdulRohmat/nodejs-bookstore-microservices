@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   postgres-sql:
@@ -8,10 +8,56 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
+      TZ: Asia/Jakarta  # Untuk timezone OS container
+      PGTZ: Asia/Jakarta  # Untuk timezone PostgreSQL khusus
     ports:
-      - '5432:5432'
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  kafka:
+    image: bitnami/kafka:3.6.0-debian-11-r0
+    container_name: kafka
+    hostname: kafka
+    environment:
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+      KAFKA_CFG_PROCESS_ROLES: "broker,controller"
+      KAFKA_CFG_NODE_ID: "1"
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
+      KAFKA_CFG_LISTENERS: "PLAINTEXT://:9092,CONTROLLER://:9093"
+      KAFKA_CFG_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka-data:/bitnami/kafka/data
+    command: >
+      bash -c "
+        if [ ! -f /bitnami/kafka/data/meta.properties ]; then
+          echo 'Formatting Kafka storage...' &&
+          kafka-storage.sh format -t $(kafka-storage.sh random-uuid) -c /opt/bitnami/kafka/config/kraft/server.properties
+        fi &&
+        echo 'Starting Kafka...' &&
+        kafka-server-start.sh /opt/bitnami/kafka/config/kraft/server.properties
+      "
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    restart: always
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_KRAFT_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_PROPERTIES_CLIENT_ID: kafka-ui
+      KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL: PLAINTEXT
+      BASIC_AUTH_ENABLED: "false"
+    ports:
+      - "8080:8080"
+
 volumes:
   pgdata:
+  kafka-data:
